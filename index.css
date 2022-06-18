@@ -1,3 +1,15 @@
+nav {
+    width: 15%;
+    border-color: black;
+    border-width: 5px;
+    border-style: solid;
+}
 #map {
-    height: 500px;
+    position: absoulute;
+    top: 0;
+    margin-top: 0;
+    padding-top: 0;
+
+    width: 85%;
+    height: 100vh;
 }
