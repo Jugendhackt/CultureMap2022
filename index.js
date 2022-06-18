@@ -22,8 +22,7 @@ function buildOverpassApiUrl(map, overpassQuery) {
     return resultUrl;
 }
 
-function createLayer() {
-    var filter = 'tourism=attraction'
+function createLayer(filter = 'tourism=attraction', preferedTags) {
     var overpassApiUrl = buildOverpassApiUrl(map, filter);
     
     $.get(overpassApiUrl, function (osmDataAsJson) {
@@ -41,16 +40,21 @@ function createLayer() {
             }
             return true;
         }, */
-        /* onEachFeature: function (feature, layer) {
-            var popupContent = "";
-            popupContent = popupContent + "<dt>@id</dt><dd>" + feature.properties.type + "/" + feature.properties.id + "</dd>";
+        onEachFeature: function (feature, layer) {
+            var popupContent = '' + "<dt>@id</dt><dd>" + feature.properties.type + "/" + feature.properties.id + "</dd>";
             var keys = Object.keys(feature.properties.tags);
+            var intresting_tags = ['tourism'];
             keys.forEach(function (key) {
-            popupContent = popupContent + "<dt>" + key + "</dt><dd>" + feature.properties.tags[key] + "</dd>";
+                if (intresting_tags.includes(key)) {
+                    popupContent = popupContent + "<dt>" + key + "</dt><dd>" + feature.properties.tags[key] + "</dd>";
+                }
             });
             popupContent = popupContent + "</dl>"
             layer.bindPopup(popupContent);
-        } */
+
+
+
+        }
         }).addTo(map);
     });
 }
