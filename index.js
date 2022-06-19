@@ -64,6 +64,6 @@ function createLayer(filter = 'tourism=attraction') {
 var firstLayer = createLayer();
 
 
-map.on('zoomend', function (){
+/* map.on('zoomend', function (){
     alert('here');
-});
+}); */
