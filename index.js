@@ -2,6 +2,7 @@ var map = L.map('map').setView([50.1174, 8.684], 13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
+    minZoom: 4,
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
@@ -22,40 +23,47 @@ function buildOverpassApiUrl(map, overpassQuery) {
     return resultUrl;
 }
 
-function createLayer(filter = 'tourism=attraction', preferedTags) {
+function createLayer(filter = 'tourism=attraction') {
     var overpassApiUrl = buildOverpassApiUrl(map, filter);
-    
+    var resultLayer = null;
     $.get(overpassApiUrl, function (osmDataAsJson) {
+        //alert('Ich existiere, denn ich denke')
         var resultAsGeojson = osmtogeojson(osmDataAsJson);
-        var resultLayer = L.geoJson(resultAsGeojson, {
+        resultLayer = L.geoJson(resultAsGeojson, {
         style: function (feature) {
-            return {color: "#ff0000"};
+            return {color: '#ff0000'};
         },
         /* filter: function (feature, layer) {
-            var isPolygon = (feature.geometry) && (feature.geometry.type !== undefined) && (feature.geometry.type === "Polygon");
+            var isPolygon = (feature.geometry) && (feature.geometry.type !== undefined) && (feature.geometry.type === 'Polygon');
             if (isPolygon) {
-            feature.geometry.type = "Point";
+            feature.geometry.type = 'Point';
             var polygonCenter = L.latLngBounds(feature.geometry.coordinates[0]).getCenter();
             feature.geometry.coordinates = [ polygonCenter.lat, polygonCenter.lng ];
             }
             return true;
         }, */
         onEachFeature: function (feature, layer) {
-            var popupContent = '' + "<dt>@id</dt><dd>" + feature.properties.type + "/" + feature.properties.id + "</dd>";
+            var popupContent = '' + '<dt>' + feature.properties.tags['name'] + '</dt><dd>' + '</dd>';
             var keys = Object.keys(feature.properties.tags);
-            var intresting_tags = ['tourism'];
+            var intresting_tags = ['tourism', 'opening_hours', 'website'];
             keys.forEach(function (key) {
                 if (intresting_tags.includes(key)) {
-                    popupContent = popupContent + "<dt>" + key + "</dt><dd>" + feature.properties.tags[key] + "</dd>";
+                    popupContent = popupContent + '<dt>' + key + '</dt><dd>' + feature.properties.tags[key] + '</dd>';
                 }
             });
-            popupContent = popupContent + "</dl>"
+            popupContent = popupContent + '</dl>';
             layer.bindPopup(popupContent);
-
-
-
         }
         }).addTo(map);
     });
+    return resultLayer;
+    
 }
-createLayer()
+
+
+var firstLayer = createLayer();
+
+
+map.on('zoomend', function (){
+    alert('here');
+});
