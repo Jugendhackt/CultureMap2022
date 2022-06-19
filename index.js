@@ -57,7 +57,6 @@ function createLayer(filter = 'tourism=attraction') {
         }).addTo(map);
     });
     return resultLayer;
-    
 }
 
 
@@ -66,6 +65,16 @@ var layer = createLayer();
 
 map.on('zoomend', function (){
     //quick and dirty
-    layer = createLayer();
+    if (map.getZoom() >= 9) {
+        layer = createLayer();
+    }
+    // quick and dirty
+});
+
+map.on('moveend', function (){
+    //quick and dirty
+    if (map.getZoom() >= 9) {
+        layer = createLayer();
+    }
     // quick and dirty
 });
