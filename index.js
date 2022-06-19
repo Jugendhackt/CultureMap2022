@@ -27,7 +27,6 @@ function createLayer(filter = 'tourism=attraction') {
     var overpassApiUrl = buildOverpassApiUrl(map, filter);
     var resultLayer = null;
     $.get(overpassApiUrl, function (osmDataAsJson) {
-        //alert('Ich existiere, denn ich denke')
         var resultAsGeojson = osmtogeojson(osmDataAsJson);
         resultLayer = L.geoJson(resultAsGeojson, {
         style: function (feature) {
@@ -43,7 +42,11 @@ function createLayer(filter = 'tourism=attraction') {
             return true;
         }, */
         onEachFeature: function (feature, layer) {
-            var popupContent = '' + '<dt>' + feature.properties.tags['name'] + '</dt><dd>' + '</dd>';
+            var name = feature.properties.tags['name']
+            if (name == undefined) {
+                name = 'Unbekannter Name'
+            }
+            var popupContent = '' + '<dt>' + name + '</dt><dd>' + '</dd>';
             var keys = Object.keys(feature.properties.tags);
             var intresting_tags = ['tourism', 'opening_hours', 'website'];
             keys.forEach(function (key) {
