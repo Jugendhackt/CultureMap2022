@@ -58,21 +58,12 @@ function createLayer(filter = 'tourism=attraction') {
     return resultLayer;
 }
 
+resultLayer = createLayer();
 
-var layer = createLayer();
 
-
-map.on('zoomend', function () {
+map.on('moveend', function () { // after the map get moved or zoomed the map will refresh
+    map.removeLayer(resultLayer);
     if (map.getZoom() >= 9) {
-        map.removeLayer(resultLayer);
-        resultLayer = createLayer();
-    }
-    // quick and dirty
-});
-
-map.on('moveend', function () {
-    if (map.getZoom() >= 9) {
-        map.removeLayer(resultLayer);
         resultLayer = createLayer();
     }
 });
