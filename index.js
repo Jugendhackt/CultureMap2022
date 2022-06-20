@@ -1,5 +1,7 @@
-var map = L.map('map').setView([50.1174, 8.684], 13);
+const filters = ['tourism=attraction', 'historic=castle', 'historic=railway_car', 'historic=ship', 'tourism=viewpoint', 'building=church'];
+const intresting_tags = ['tourism', 'opening_hours', 'website', 'historic', 'building'];
 var resultLayer = null;
+var map = L.map('map').setView([50.1174, 8.684], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     minZoom: 4,
@@ -8,18 +10,23 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 
 
-function buildOverpassApiUrl(map, overpassQuery) {
+function buildOverpassApiUrl(map = map, overpassQuery) {
     var bounds = map.getBounds().getSouth() + ',' + map.getBounds().getWest() + ',' + map.getBounds().getNorth() + ',' + map.getBounds().getEast();
-    var nodeQuery = 'node[' + overpassQuery + '](' + bounds + ');'; // points
-    var wayQuery = 'way[' + overpassQuery + '](' + bounds + ');'; // line
-    var relationQuery = 'relation[' + overpassQuery + '](' + bounds + ');'; //group of objects
-    var query = '?data=[out:json][timeout:15];(' + nodeQuery + wayQuery + relationQuery + ');out body geom;';
+    var nwrQuery = '('
+    overpassQuery.forEach(option => {
+        nwrQuery += 'nwr[' + option + '](' + bounds + ');';
+    });
+    nwrQuery += ');'
+
+    // var nwrQuery = 'nwr[' + overpassQuery + '](' + bounds + ');'; // points
+
+    var query = '?data=[out:json][timeout:15];' + nwrQuery + 'out body geom;';
     var baseUrl = 'http://overpass-api.de/api/interpreter';
     var resultUrl = baseUrl + query;
     return resultUrl;
 }
 
-function createLayer(filter = 'tourism=attraction') {
+function createLayer(filter = filters) {
     var overpassApiUrl = buildOverpassApiUrl(map, filter);
 
     $.get(overpassApiUrl, function (osmDataAsJson) {
@@ -28,15 +35,6 @@ function createLayer(filter = 'tourism=attraction') {
             style: function (feature) {
                 return { color: '#ff0000' };
             },
-            /* filter: function (feature, layer) {
-                var isPolygon = (feature.geometry) && (feature.geometry.type !== undefined) && (feature.geometry.type === 'Polygon');
-                if (isPolygon) {
-                feature.geometry.type = 'Point';
-                var polygonCenter = L.latLngBounds(feature.geometry.coordinates[0]).getCenter();
-                feature.geometry.coordinates = [ polygonCenter.lat, polygonCenter.lng ];
-                }
-                return true;
-            }, */
             onEachFeature: function (feature, layer) {
                 var name = feature.properties.tags['name']
                 if (name == undefined) {
@@ -44,7 +42,6 @@ function createLayer(filter = 'tourism=attraction') {
                 }
                 var popupContent = '' + '<dt>' + name + '</dt><dd>' + '</dd>';
                 var keys = Object.keys(feature.properties.tags);
-                var intresting_tags = ['tourism', 'opening_hours', 'website'];
                 keys.forEach(function (key) {
                     if (intresting_tags.includes(key)) {
                         popupContent = popupContent + '<dt>' + key + '</dt><dd>' + feature.properties.tags[key] + '</dd>';
@@ -64,6 +61,6 @@ resultLayer = createLayer();
 map.on('moveend', function () { // after the map get moved or zoomed the map will refresh
     map.removeLayer(resultLayer);
     if (map.getZoom() >= 9) {
-        resultLayer = createLayer();
+        resultLayer = createLayer(filters);
     }
 });
