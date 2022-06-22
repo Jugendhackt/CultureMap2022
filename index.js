@@ -40,15 +40,25 @@ function createLayer(filter = filters) {
                 if (name == undefined) {
                     name = 'Unbekannter Name'
                 }
-                var popupContent = '' + '<dt>' + name + '</dt><dd>' + '</dd>';
-                var keys = Object.keys(feature.properties.tags);
-                keys.forEach(function (key) {
-                    if (intresting_tags.includes(key)) {
-                        popupContent = popupContent + '<dt>' + key + '</dt><dd>' + feature.properties.tags[key] + '</dd>';
+
+                layer.on({
+                    click: function () { // run when a feature get clicked
+                        document.getElementById('name').innerText = name;
+                        var table = document.getElementById('table');
+                        table.innerHTML = '';
+                        var keys = Object.keys(feature.properties.tags);
+                        keys.forEach(function (key){
+                            if (intresting_tags.includes(key)) {
+                                var row = table.insertRow(0);
+                                var cellTagName = row.insertCell(0);
+                                var cellTagValue = row.insertCell(1);
+                                cellTagName.innerText = key;
+                                cellTagValue.innerText = feature.properties.tags[key];
+                                console.log('here will come that it generates a new line for the table in which the data stands')
+                            }
+                        });
                     }
                 });
-                popupContent = popupContent + '</dl>';
-                layer.bindPopup(popupContent);
             }
         }).addTo(map);
     });
@@ -59,7 +69,9 @@ resultLayer = createLayer();
 
 
 map.on('moveend', function () { // after the map get moved or zoomed the map will refresh
-    map.removeLayer(resultLayer);
+    if (resultLayer != null) {
+        map.removeLayer(resultLayer);
+    }
     if (map.getZoom() >= 9) {
         resultLayer = createLayer(filters);
     }
